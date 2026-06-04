@@ -7,7 +7,7 @@ export type FuelState = "consuming" | "cooldown" | "charging";
 
 export const SHIP_HALF_W = 18;
 export const SHIP_HALF_H = 11;
-const NOZZLE_LOCAL_X = -16;
+const NOZZLE_LOCAL_X = -14; // left edge of circular body (r=14)
 
 export class Ship extends Container {
   public vx = 0;
@@ -39,12 +39,38 @@ export class Ship extends Container {
 
   private draw(): void {
     const g = new Graphics();
-    // Body: rocket polygon pointing right, centered at (0,0)
-    g.poly([20, 0, -8, -11, -16, -4, -16, 4, -8, 11])
-      .fill(0x00e5ff)
-      .stroke({ color: 0x0099bb, width: 1 });
-    // Nozzle glow dot
-    g.circle(NOZZLE_LOCAL_X, 0, 4).fill({ color: 0x00ffff, alpha: 0.6 });
+
+    // --- Rear fins (red, drawn behind body) ---
+    g.poly([-10, -8, -20, -18, -10, -18]).fill(0xef4444);
+    g.poly([-10, 8, -20, 18, -10, 18]).fill(0xef4444);
+
+    // --- Landing legs (gray, behind body) ---
+    // Front leg (spreads nose-ward and down)
+    g.moveTo(6, 11)
+      .lineTo(15, 22)
+      .lineTo(22, 22)
+      .stroke({ color: 0x94a3b8, width: 3.5, cap: "round", join: "round" });
+    // Rear leg (spreads tail-ward and down)
+    g.moveTo(-3, 11)
+      .lineTo(-11, 22)
+      .lineTo(-18, 22)
+      .stroke({ color: 0x94a3b8, width: 3.5, cap: "round", join: "round" });
+
+    // --- Main body (white sphere, like SVG) ---
+    g.circle(0, 0, 14).fill(0xf8fafc).stroke({ color: 0xc4d5e8, width: 1.5 });
+
+    // Lower-body shading
+    g.ellipse(0, 4, 13, 7).fill({ color: 0xb0c4d8, alpha: 0.4 });
+
+    // --- Porthole window (blue, front of rocket) ---
+    g.circle(7, -2, 5.5).fill(0x38bdf8).stroke({ color: 0x334155, width: 2 });
+    // Window reflection highlight
+    g.circle(5.5, -3.5, 2).fill({ color: 0xffffff, alpha: 0.6 });
+
+    // --- Engine nozzle glow (left edge) ---
+    g.circle(NOZZLE_LOCAL_X, 0, 4.5).fill({ color: 0xff8c00, alpha: 0.7 });
+    g.circle(NOZZLE_LOCAL_X, 0, 2.5).fill({ color: 0xffee00, alpha: 0.9 });
+
     this.addChild(g);
   }
 

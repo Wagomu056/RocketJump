@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <rect width="400" height="400" rx="20" fill="#1e1b4b" />
+  <circle cx="80" cy="70" r="2" fill="#fff" opacity="0.8" />
+  <circle cx="320" cy="120" r="3" fill="#fff" opacity="0.5" />
+  <circle cx="120" cy="280" r="1.5" fill="#fff" opacity="0.6" />
+  <circle cx="280" cy="300" r="2" fill="#fff" opacity="0.7" />
+
+  <g id="rocket-body">
+    
+    <path d="M 160,220 L 130,270 L 115,270" fill="none" stroke="#94a3b8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 110,270 L 130,270" fill="none" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+    <path d="M 240,220 L 270,270 L 285,270" fill="none" stroke="#94a3b8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 270,270 L 290,270" fill="none" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+
+    <main-mount>
+      <path d="M 180,235 A 20,20 0 0, 0 220,235 Z" fill="#475569" />
+    </main-mount>
+
+    <circle cx="200" cy="180" r="50" fill="#f8fafc" />
+    <path d="M 153,195 A 50,50 0 0, 0 247,195 A 50,43 0 0, 1 153,195 Z" fill="#cbd5e1" opacity="0.5" />
+
+    <circle cx="200" cy="175" r="22" fill="#38bdf8" stroke="#334155" stroke-width="4" />
+    <path d="M 185,165 A 15,15 0 0, 1 210,165" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+
+    <path d="M 151,170 A 50,50 0 0, 1 160,143 A 50,50 0 0, 0 151,170 Z" fill="#ef4444" />
+    <path d="M 249,170 A 50,50 0 0, 0 240,143 A 50,50 0 0, 1 249,170 Z" fill="#ef4444" />
+
+  </g>
+</svg>

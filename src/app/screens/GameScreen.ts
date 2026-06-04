@@ -279,8 +279,6 @@ export class GameScreen extends Container {
   }
 
   private pruneEntities(): void {
-    const leftEdge = -this.worldContainer.x;
-
     this.platforms = this.platforms.filter((p) => {
       if (p.right() + this.worldContainer.x < -50) {
         this.worldContainer.removeChild(p);
@@ -291,7 +289,8 @@ export class GameScreen extends Container {
     });
 
     this.fuelItems = this.fuelItems.filter((item) => {
-      const offScreen = item.x + this.worldContainer.x < leftEdge - 50;
+      // Off-screen: item's screen X is past the left edge (same units as platform check)
+      const offScreen = item.x + this.worldContainer.x < -50;
       if (item.collected || offScreen) {
         this.worldContainer.removeChild(item);
         item.destroy();

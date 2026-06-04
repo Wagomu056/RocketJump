@@ -15,8 +15,8 @@ export class Platform extends Container {
 
   private draw(): void {
     const g = new Graphics();
-    // Dark body
-    g.roundRect(0, 0, this.platformWidth, PLATFORM_HEIGHT, 4).fill(0x1a1a24);
+    // Body
+    g.roundRect(0, 0, this.platformWidth, PLATFORM_HEIGHT, 4).fill(0x4a5568);
     // Neon green top surface
     g.rect(0, 0, this.platformWidth, 4).fill(0x39ff14);
     this.addChild(g);

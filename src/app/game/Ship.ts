@@ -103,8 +103,19 @@ export class Ship extends Container {
 
           const dx = touchXWorld - this.x;
           const dy = touchYWorld - this.y;
-          let theta = Math.atan2(dy, dx);
-          theta = Math.max(0, Math.min(Math.PI, theta));
+
+          // Spec §3.1: left half-circle only (0° = straight up, 180° = straight down,
+          // counterclockwise through left). If touch is to the right of the ship,
+          // clamp to the nearest boundary of the left half-circle.
+          let theta: number;
+          if (dx > 0) {
+            // Upper-right → clamp to straight up; lower-right → clamp to straight down
+            theta = dy <= 0 ? -Math.PI / 2 : Math.PI / 2;
+          } else if (dx === 0 && dy === 0) {
+            theta = Math.PI / 2; // default: fire straight down → ship goes up
+          } else {
+            theta = Math.atan2(dy, dx); // left half: no clamping needed
+          }
           this._lastJetAngle = theta;
 
           this.vx -= Math.cos(theta) * GAME_PARAMS.thrustPower * dt;

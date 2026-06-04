@@ -7,6 +7,7 @@ export type FuelState = "consuming" | "cooldown" | "charging";
 
 export const SHIP_HALF_W = 18;
 export const SHIP_HALF_H = 11;
+export const SHIP_LEG_BOTTOM = 22; // local y of leg-tip contact point
 const NOZZLE_LOCAL_X = -14; // left edge of circular body (r=14)
 
 export class Ship extends Container {
@@ -104,7 +105,7 @@ export class Ship extends Container {
   }
 
   public land(platformTopY: number): void {
-    this.y = platformTopY - SHIP_HALF_H;
+    this.y = platformTopY - SHIP_LEG_BOTTOM;
     this.vy = 0;
   }
 
@@ -122,8 +123,8 @@ export class Ship extends Container {
     const dt = ticker.deltaTime;
     const elapsedSec = ticker.elapsedMS / 1000;
 
-    // Snapshot bottom before movement (tunnelling prevention)
-    this.prevBottom = this.bottom();
+    // Snapshot leg-tip bottom before movement (tunnelling prevention)
+    this.prevBottom = this.y + SHIP_LEG_BOTTOM;
 
     this._isThrusting = false;
 

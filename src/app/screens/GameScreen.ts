@@ -9,7 +9,7 @@ import { FuelItem, ITEM_PICKUP_RADIUS } from "../game/FuelItem";
 import { JetParticleSystem } from "../game/JetParticleSystem";
 import { Platform } from "../game/Platform";
 import { PlatformGenerator } from "../game/PlatformGenerator";
-import { Ship, SHIP_HALF_W } from "../game/Ship";
+import { Ship, SHIP_HALF_W, SHIP_LEG_BOTTOM } from "../game/Ship";
 import { Starfield } from "../game/Starfield";
 import { userSettings } from "../utils/userSettings";
 
@@ -252,7 +252,7 @@ export class GameScreen extends Container {
   private checkCollisions(): void {
     const sl = this.ship.left();
     const sr = this.ship.right();
-    const sb = this.ship.bottom();
+    const sb = this.ship.y + SHIP_LEG_BOTTOM; // leg-tip contact point
 
     // Landing: descending-only, with tunnelling guard
     if (this.ship.vy > 0) {

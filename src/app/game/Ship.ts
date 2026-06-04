@@ -113,22 +113,35 @@ export class Ship extends Container {
           const dx = touchXWorld - this.x;
           const dy = touchYWorld - this.y;
 
-          // Spec §3.1: left half-circle only (0° = straight up, 180° = straight down,
-          // counterclockwise through left). If touch is to the right of the ship,
-          // clamp to the nearest boundary of the left half-circle.
-          let theta: number;
-          if (dx > 0) {
-            // Upper-right → clamp to straight up; lower-right → clamp to straight down
-            theta = dy <= 0 ? -Math.PI / 2 : Math.PI / 2;
-          } else if (dx === 0 && dy === 0) {
-            theta = Math.PI / 2; // default: fire straight down → ship goes up
-          } else {
-            theta = Math.atan2(dy, dx); // left half: no clamping needed
-          }
-          this._lastJetAngle = theta;
+          // Spec angle α: 0 = straight up, π/2 = left, π = straight down (CCW).
+          // Computed as atan2(-dx, -dy) in screen coords (y-down).
+          const minAlpha = (GAME_PARAMS.jetAngleMinDeg * Math.PI) / 180;
+          const maxAlpha = (GAME_PARAMS.jetAngleMaxDeg * Math.PI) / 180;
 
-          this.vx -= Math.cos(theta) * GAME_PARAMS.thrustPower * dt;
-          this.vy -= Math.sin(theta) * GAME_PARAMS.thrustPower * dt;
+          let specAlpha =
+            dx === 0 && dy === 0 ? maxAlpha : Math.atan2(-dx, -dy);
+
+          // Clamp to [minAlpha, maxAlpha] — snap to nearest boundary.
+          if (specAlpha < minAlpha || specAlpha > maxAlpha) {
+            const angDist = (d: number) => {
+              const m = Math.abs(d) % (2 * Math.PI);
+              return m > Math.PI ? 2 * Math.PI - m : m;
+            };
+            specAlpha =
+              angDist(specAlpha - minAlpha) <= angDist(specAlpha - maxAlpha)
+                ? minAlpha
+                : maxAlpha;
+          }
+
+          // Screen-space jet angle for the particle system
+          this._lastJetAngle = Math.atan2(
+            -Math.cos(specAlpha),
+            -Math.sin(specAlpha),
+          );
+
+          // Apply thrust (ship accelerates opposite to jet direction)
+          this.vx += Math.sin(specAlpha) * GAME_PARAMS.thrustPower * dt;
+          this.vy += Math.cos(specAlpha) * GAME_PARAMS.thrustPower * dt;
 
           if (this.fuel === 0) {
             this.fuelState = "cooldown";

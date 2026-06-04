@@ -41,23 +41,32 @@ export class JetParticleSystem extends Container {
     }
   }
 
-  /** Burst yellow particles in all directions (item pickup effect). */
-  public burst(worldX: number, worldY: number, count: number): void {
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 4;
-      const size = 3 + Math.random() * 3;
+  /**
+   * Surge effect: small golden particles rising from below the ship (item pickup).
+   * Narrow upward cone — energetic but understated.
+   */
+  public surge(worldX: number, worldY: number): void {
+    for (let i = 0; i < 8; i++) {
+      // Narrow upward cone (±0.25 rad from straight up)
+      const spread = (Math.random() - 0.5) * 0.5;
+      const angle = -Math.PI / 2 + spread;
+      const speed = 4 + Math.random() * 4;
+      const size = 2.25 + Math.random() * 1.5;
 
       const gfx = new Graphics();
-      gfx.circle(0, 0, size).fill(0xffee00);
-      gfx.position.set(worldX, worldY);
+      gfx.circle(0, 0, size).fill(0xffe040);
+      // Spawn at foot level (~22px below ship center)
+      gfx.position.set(
+        worldX + (Math.random() - 0.5) * 10,
+        worldY + 18 + Math.random() * 8,
+      );
       this.addChild(gfx);
 
       this.particles.push({
         gfx,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        life: 1.2,
+        life: 0.9,
       });
     }
   }

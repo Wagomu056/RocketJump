@@ -274,7 +274,7 @@ export class GameScreen extends Container {
       const dy = this.ship.y - item.y;
       if (dx * dx + dy * dy < rSq) {
         item.collect(this.ship);
-        this.particles.burst(this.ship.x, this.ship.y, 12);
+        this.particles.surge(this.ship.x, this.ship.y);
       }
     }
   }

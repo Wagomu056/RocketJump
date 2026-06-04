@@ -20,12 +20,21 @@ export class Ship extends Container {
   private cooldownTimer = 0;
   private _lastJetAngle = Math.PI / 2;
   private _isThrusting = false;
+  private gaugeGfx: Graphics;
+
+  // Vertical fuel gauge dimensions (in ship-local coords)
+  private static readonly GAUGE_X = SHIP_HALF_W + 5;
+  private static readonly GAUGE_H = 48;
+  private static readonly GAUGE_W = 6;
 
   constructor() {
     super();
     this.fuel = GAME_PARAMS.initialMaxFuel;
     this.maxFuel = GAME_PARAMS.initialMaxFuel;
     this.draw();
+    this.gaugeGfx = new Graphics();
+    this.addChild(this.gaugeGfx);
+    this.updateFuelGauge();
   }
 
   private draw(): void {
@@ -163,6 +172,28 @@ export class Ship extends Container {
     this.y += this.vy * dt;
   }
 
+  /** Redraw the vertical fuel gauge to the right of the ship. */
+  public updateFuelGauge(): void {
+    const ratio = this.maxFuel > 0 ? Math.min(this.fuel / this.maxFuel, 1) : 0;
+    const x = Ship.GAUGE_X;
+    const h = Ship.GAUGE_H;
+    const w = Ship.GAUGE_W;
+    const topY = -h / 2;
+
+    const g = this.gaugeGfx;
+    g.clear();
+    // Track background
+    g.roundRect(x, topY, w, h, 2).fill({ color: 0x333355, alpha: 0.8 });
+    // Fill from bottom up
+    if (ratio > 0) {
+      const fillH = h * ratio;
+      const fillColor = ratio > 0.25 ? 0x00e5ff : 0xff3300;
+      g.roundRect(x, topY + h - fillH, w, fillH, 2).fill(fillColor);
+    }
+    // Border
+    g.roundRect(x, topY, w, h, 2).stroke({ color: 0x8888aa, width: 1 });
+  }
+
   public resetState(): void {
     this.vx = 0;
     this.vy = 0;
@@ -173,5 +204,6 @@ export class Ship extends Container {
     this._isThrusting = false;
     this._lastJetAngle = Math.PI / 2;
     this.prevBottom = 0;
+    this.updateFuelGauge();
   }
 }

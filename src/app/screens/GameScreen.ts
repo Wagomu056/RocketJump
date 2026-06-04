@@ -1,7 +1,7 @@
 import { animate } from "motion";
 import type { ObjectTarget } from "motion/react";
 import type { FederatedPointerEvent, Ticker } from "pixi.js";
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Text } from "pixi.js";
 
 import { GAME_PARAMS } from "../config/GameParams";
 import { engine } from "../getEngine";
@@ -32,7 +32,6 @@ export class GameScreen extends Container {
 
   // HUD elements
   private scoreLabel: Text;
-  private fuelGaugeGfx: Graphics;
 
   // Input state
   private isPointerDown = false;
@@ -66,10 +65,6 @@ export class GameScreen extends Container {
     });
     this.scoreLabel.position.set(16, 16);
     this.hudContainer.addChild(this.scoreLabel);
-
-    this.fuelGaugeGfx = new Graphics();
-    this.fuelGaugeGfx.position.set(this.screenW - 156, 16);
-    this.hudContainer.addChild(this.fuelGaugeGfx);
   }
 
   // ─── AppScreen lifecycle ────────────────────────────────────────────────
@@ -121,7 +116,6 @@ export class GameScreen extends Container {
     this.screenW = w;
     this.screenH = h;
     this.scoreLabel.position.set(16, 16);
-    this.fuelGaugeGfx.position.set(w - 156, 16);
   }
 
   // ─── Game loop ──────────────────────────────────────────────────────────
@@ -309,19 +303,7 @@ export class GameScreen extends Container {
 
   private updateHUD(): void {
     this.scoreLabel.text = `${this.score}m`;
-
-    const fillRatio = Math.min(this.ship.fuel / this.ship.maxFuel, 1);
-    const g = this.fuelGaugeGfx;
-    g.clear();
-    // Track
-    g.roundRect(0, 0, 140, 14, 4).fill({ color: 0x333355, alpha: 0.8 });
-    // Fill
-    if (fillRatio > 0) {
-      const fillColor = fillRatio > 0.25 ? 0x00e5ff : 0xff3300;
-      g.roundRect(0, 0, 140 * fillRatio, 14, 4).fill(fillColor);
-    }
-    // Border
-    g.roundRect(0, 0, 140, 14, 4).stroke({ color: 0x8888aa, width: 1 });
+    this.ship.updateFuelGauge();
   }
 
   // ─── Pointer events ─────────────────────────────────────────────────────

@@ -41,6 +41,27 @@ export class JetParticleSystem extends Container {
     }
   }
 
+  /** Burst yellow particles in all directions (item pickup effect). */
+  public burst(worldX: number, worldY: number, count: number): void {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 4;
+      const size = 3 + Math.random() * 3;
+
+      const gfx = new Graphics();
+      gfx.circle(0, 0, size).fill(0xffee00);
+      gfx.position.set(worldX, worldY);
+      this.addChild(gfx);
+
+      this.particles.push({
+        gfx,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1.2,
+      });
+    }
+  }
+
   public update(ticker: Ticker): void {
     const dt = ticker.deltaTime;
     const toRemove: Particle[] = [];

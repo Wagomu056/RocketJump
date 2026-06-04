@@ -25,8 +25,10 @@ export class Ship extends Container {
 
   // Vertical fuel gauge dimensions (in ship-local coords)
   private static readonly GAUGE_X = SHIP_HALF_W + 5;
-  private static readonly GAUGE_H = 48;
+  private static readonly GAUGE_BASE_H = 48; // height at initialMaxFuel
+  private static readonly GAUGE_MAX_H = 120; // cap so it doesn't grow forever
   private static readonly GAUGE_W = 6;
+  private static readonly GAUGE_BOTTOM_Y = 16; // fixed bottom anchor
 
   constructor() {
     super();
@@ -212,13 +214,19 @@ export class Ship extends Container {
     this.y += this.vy * dt;
   }
 
-  /** Redraw the vertical fuel gauge to the right of the ship. */
+  /** Redraw the vertical fuel gauge. Bottom is fixed; top grows upward as maxFuel increases. */
   public updateFuelGauge(): void {
     const ratio = this.maxFuel > 0 ? Math.min(this.fuel / this.maxFuel, 1) : 0;
     const x = Ship.GAUGE_X;
-    const h = Ship.GAUGE_H;
     const w = Ship.GAUGE_W;
-    const topY = -h / 2;
+    const bottomY = Ship.GAUGE_BOTTOM_Y;
+
+    // Height scales with maxFuel, capped at GAUGE_MAX_H
+    const h = Math.min(
+      Ship.GAUGE_BASE_H * (this.maxFuel / GAME_PARAMS.initialMaxFuel),
+      Ship.GAUGE_MAX_H,
+    );
+    const topY = bottomY - h;
 
     const g = this.gaugeGfx;
     g.clear();
@@ -228,7 +236,7 @@ export class Ship extends Container {
     if (ratio > 0) {
       const fillH = h * ratio;
       const fillColor = ratio > 0.25 ? 0x00e5ff : 0xff3300;
-      g.roundRect(x, topY + h - fillH, w, fillH, 2).fill(fillColor);
+      g.roundRect(x, bottomY - fillH, w, fillH, 2).fill(fillColor);
     }
     // Border
     g.roundRect(x, topY, w, h, 2).stroke({ color: 0x8888aa, width: 1 });

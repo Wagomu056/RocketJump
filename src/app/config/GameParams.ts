@@ -32,6 +32,6 @@ export const GAME_PARAMS = {
   pixelsPerMeter: 10, // score = floor(totalScrolled / pixelsPerMeter)
 
   // Jet angle limits (spec angle system: 0° = straight up, CCW to 180° = straight down)
-  jetAngleMinDeg: 150, // minimum angle — 0 = straight up (clamped when touch is upper side)
+  jetAngleMinDeg: 170, // minimum angle — 0 = straight up (clamped when touch is upper side)
   jetAngleMaxDeg: 170, // maximum angle — 180 = straight down (clamped when touch is lower side)
 } as const;

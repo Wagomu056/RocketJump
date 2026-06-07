@@ -219,3 +219,82 @@
 **Context**: CONSTRUCTION - Unit 3 Air Item Probability Fix complete
 
 ---
+
+## Unit 3: Third Item Type Added (Distant Items)
+**Timestamp**: 2026-06-07T14:50:00Z
+**User Request**: "3つ目のアイテムタイプを追加してください。プラットフォームから遠い位置に出現する特大アイテムです。大きさは2程度にしましょう。"
+**Implementation**:
+  - Created DistantItem.ts class extending Item base class
+  - Added distantItem configuration to GAME_PARAMS.items:
+    * size: 2.0 (extra large, twice normal)
+    * spawnFrequency: 0.1 (rare, 10% spawn chance)
+    * effectAmount: 50 (huge reward)
+    * distanceRatio: 0.7 (70% of gap height below bottom platform)
+  - Updated GameScreen to:
+    * Import DistantItem and DistantItemParams
+    * Add distantItems array
+    * Spawn distant items in gap centers when new platforms generated
+    * Include distant items in collision detection
+    * Handle cleanup and pruning for distant items
+  - All three item types now coexist: groundItem (0.5x), airItem (1.5x), distantItem (2.0x)
+  - Each type has independent, tunable spawn frequency and effect amount
+**Files Modified**:
+  - src/app/config/GameParams.ts (added distantItem config)
+  - src/app/game/DistantItem.ts (new file)
+  - src/app/screens/GameScreen.ts (added distantItems management)
+**Testing**: Build PASSED (lint + tsc + vite all clean, 1104 modules)
+**Context**: CONSTRUCTION - Unit 3 Third Item Type Implementation complete
+
+---
+
+## Unit 3: Distant Item Y-Axis Positioning Correction
+**Timestamp**: 2026-06-07T14:55:00Z
+**User Clarification**: "ギャップの奥というよりはプラットフォームから上下どちらかに遠くしたいんです。プラットフォームの下に一回落ちかけてからまた浮上するというリスクをとってまで効果の高いアイテムを取るかどうかをユーザーに考えさせてスリルを味わってほしい"
+**Problem**: Distant items were positioned diagonally (both X and Y using distanceRatio), missing the risk/reward tension
+**Solution**: Repositioned distant items vertically below platforms
+  - X-axis: Random distribution across gap width (normal traversal possible)
+  - Y-axis: Positioned below lowest platform by distanceRatio × gap height (requires descent)
+  - Result: Player must descend below platform level, take falling risk, then ascend to collect reward
+**Changes**:
+  - Modified GameScreen distant item spawn logic:
+    * X: `gapMinX + Math.random() * gapWidth` (random horizontal)
+    * Y: `Math.max(lastPlat.y, p.y) + verticalDistance` (below both platforms)
+  - Updated GAME_PARAMS comment to clarify distanceRatio as vertical offset
+**Design Intent**: Risk/reward mechanic — high reward (50 fuel) justifies descent risk and platform navigation challenge
+**Testing**: Build PASSED (lint + tsc + vite all clean)
+**Context**: CONSTRUCTION - Unit 3 Distant Item Positioning Correction complete
+
+---
+
+## Unit 3: Distant Item Depth Adjustment Refactoring
+**Timestamp**: 2026-06-07T15:00:00Z
+**User Request**: "深さの調整をもっとやりやすくしたいなと思います。プレイヤーの機体の高さの何倍プラットフォームから離れているかの最小・最大で設定するのはどうでしょうか"
+**Rationale**: Current distanceRatio method is gap-dependent; ship-height-relative method is intuitive and consistent
+**Implementation**:
+  - Replaced distanceRatio with minShipHeights and maxShipHeights parameters
+  - Updated GAME_PARAMS.items.distantItem:
+    * Removed: distanceRatio
+    * Added: minShipHeights: 3.0 (minimum distance in ship heights)
+    * Added: maxShipHeights: 6.0 (maximum distance in ship heights)
+  - Updated DistantItemParams interface:
+    * Removed distanceRatio property
+    * Added minShipHeights and maxShipHeights properties
+  - Modified GameScreen spawn calculation:
+    * Uses SHIP_LEG_BOTTOM constant (22px) as unit
+    * minDistance = minShipHeights × 22px
+    * maxDistance = maxShipHeights × 22px
+    * Random spawn between min/max distance
+  - Result: Intuitive adjustment (e.g., "3.0" means 3× ship height below platform)
+**Files Modified**:
+  - src/app/config/GameParams.ts (replaced distanceRatio with min/maxShipHeights)
+  - src/app/game/DistantItem.ts (updated DistantItemParams interface)
+  - src/app/screens/GameScreen.ts (updated spawn calculation logic)
+**Benefits**:
+  - More intuitive parameter adjustment
+  - Consistent depth regardless of platform gap size
+  - Direct relationship to visible game object (ship)
+  - Easy difficulty tuning (increase max to make harder)
+**Testing**: Build PASSED (lint + tsc + vite all clean, 1104 modules)
+**Context**: CONSTRUCTION - Unit 3 Distant Item Depth Adjustment Refactoring complete
+
+---

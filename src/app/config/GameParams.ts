@@ -20,9 +20,16 @@ export const GAME_PARAMS = {
       effectAmount: 5, // Fuel max increase value
     },
     airItem: {
-      size: 1.5, // Size multiplier for visuals and collision
+      size: 1.0, // Size multiplier for visuals and collision
       spawnFrequency: 0.2, // Probability [0-1] of spawning in each air gap
-      effectAmount: 25, // Fuel max increase value
+      effectAmount: 15, // Fuel max increase value
+    },
+    distantItem: {
+      size: 2.5, // Size multiplier for visuals and collision (extra large)
+      spawnFrequency: 0.1, // Probability [0-1] of spawning in each air gap (rare)
+      effectAmount: 50, // Fuel max increase value (very large reward)
+      minShipHeights: 6.0, // Minimum distance below platforms in ship heights
+      maxShipHeights: 10.0, // Maximum distance below platforms in ship heights
     },
   },
 

@@ -6,6 +6,7 @@ import { Container, Text } from "pixi.js";
 import { GAME_PARAMS } from "../config/GameParams";
 import { engine } from "../getEngine";
 import { AirItem } from "../game/AirItem";
+import { DistantItem, type DistantItemParams } from "../game/DistantItem";
 import { GroundItem } from "../game/GroundItem";
 import type { Item } from "../game/Item";
 import { JetParticleSystem } from "../game/JetParticleSystem";
@@ -32,6 +33,7 @@ export class GameScreen extends Container {
   private platforms: Platform[] = [];
   private groundItems: GroundItem[] = [];
   private airItems: AirItem[] = [];
+  private distantItems: DistantItem[] = [];
 
   // HUD elements
   private scoreLabel: Text;
@@ -150,6 +152,9 @@ export class GameScreen extends Container {
     for (const item of this.airItems) {
       item.update(ticker);
     }
+    for (const item of this.distantItems) {
+      item.update(ticker);
+    }
 
     // 4. Collisions
     this.checkCollisions();
@@ -191,18 +196,21 @@ export class GameScreen extends Container {
       this.platforms.push(p);
       this.worldContainer.addChild(p);
 
-      // Spawn air item in gap between last platform and new platform (only once when new platform is created)
+      // Spawn items in gap between last platform and new platform (only once when new platform is created)
       const lastPlatIdx = this.platforms.length - 2;
       if (lastPlatIdx >= 0) {
         const lastPlat = this.platforms[lastPlatIdx];
-        if (Math.random() < GAME_PARAMS.items.airItem.spawnFrequency) {
-          const gapMinX = lastPlat.x + lastPlat.width;
-          const gapMaxX = p.x;
-          const gapMinY = Math.min(lastPlat.y, p.y);
-          const gapMaxY = Math.max(lastPlat.y, p.y);
+        const gapMinX = lastPlat.x + lastPlat.width;
+        const gapMaxX = p.x;
+        const gapMinY = Math.min(lastPlat.y, p.y);
+        const gapMaxY = Math.max(lastPlat.y, p.y);
+        const gapWidth = gapMaxX - gapMinX;
+        const gapHeight = gapMaxY - gapMinY;
 
-          const airItemX = gapMinX + Math.random() * (gapMaxX - gapMinX);
-          const airItemY = gapMinY + Math.random() * (gapMaxY - gapMinY);
+        // Spawn air item
+        if (Math.random() < GAME_PARAMS.items.airItem.spawnFrequency) {
+          const airItemX = gapMinX + Math.random() * gapWidth;
+          const airItemY = gapMinY + Math.random() * gapHeight;
 
           const airItem = new AirItem(
             airItemX,
@@ -212,6 +220,30 @@ export class GameScreen extends Container {
           );
           this.airItems.push(airItem);
           this.worldContainer.addChild(airItem);
+        }
+
+        // Spawn distant item (far from platforms vertically, requires risk-taking)
+        if (Math.random() < GAME_PARAMS.items.distantItem.spawnFrequency) {
+          // X: randomly distributed across gap width
+          const distantItemX = gapMinX + Math.random() * gapWidth;
+          // Y: far below platforms based on ship height multiple
+          const platformsMaxY = Math.max(lastPlat.y, p.y);
+          const minDistance =
+            GAME_PARAMS.items.distantItem.minShipHeights * SHIP_LEG_BOTTOM;
+          const maxDistance =
+            GAME_PARAMS.items.distantItem.maxShipHeights * SHIP_LEG_BOTTOM;
+          const randomDistance =
+            minDistance + Math.random() * (maxDistance - minDistance);
+          const distantItemY = platformsMaxY + randomDistance;
+
+          const distantItem = new DistantItem(
+            distantItemX,
+            distantItemY,
+            GAME_PARAMS.items.distantItem as DistantItemParams,
+            GAME_PARAMS.items.pickupRadius,
+          );
+          this.distantItems.push(distantItem);
+          this.worldContainer.addChild(distantItem);
         }
       }
     }
@@ -285,6 +317,12 @@ export class GameScreen extends Container {
     }
     this.airItems = [];
 
+    for (const item of this.distantItems) {
+      this.worldContainer.removeChild(item);
+      item.destroy();
+    }
+    this.distantItems = [];
+
     this.particles?.clear();
   }
 
@@ -323,6 +361,9 @@ export class GameScreen extends Container {
     for (const item of this.airItems) {
       checkItemCollision(item);
     }
+    for (const item of this.distantItems) {
+      checkItemCollision(item);
+    }
   }
 
   private pruneEntities(): void {
@@ -346,6 +387,16 @@ export class GameScreen extends Container {
     });
 
     this.airItems = this.airItems.filter((item) => {
+      const offScreen = item.x + this.worldContainer.x < -50;
+      if (item.collected || offScreen) {
+        this.worldContainer.removeChild(item);
+        item.destroy();
+        return false;
+      }
+      return true;
+    });
+
+    this.distantItems = this.distantItems.filter((item) => {
       const offScreen = item.x + this.worldContainer.x < -50;
       if (item.collected || offScreen) {
         this.worldContainer.removeChild(item);

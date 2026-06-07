@@ -196,3 +196,26 @@
 **Context**: CONSTRUCTION - Unit 3 Item System complete
 
 ---
+
+## Unit 3: Air Item Spawn Frequency Fix
+**Timestamp**: 2026-06-07T14:40:00Z
+**User Issue**: "大きい方のアイテムの出現頻度が、出る時はすごい連続で出て、出ない時は全然出ない気がします"
+**Root Cause**: Air item spawn logic was executing EVERY FRAME for each platform gap. Same gap was being checked multiple times for spawn probability, causing unpredictable clustering.
+**Problem Details**:
+  - Original code looped through all platforms every frame
+  - For each gap, executed `Math.random() < 0.4` check repeatedly
+  - Failed attempts were retried next frame, causing probability compounding
+  - Result: Unpredictable bursts and droughts of items
+**Solution**: Spawn air items ONLY when new platforms are generated
+  - Moved spawn logic from per-frame loop into platform generation loop
+  - Each gap checked exactly once when new platform is created
+  - Consistent 40% spawn probability per gap (no repeated checks)
+  - Removed unnecessary `platformsWithoutAirItem` Set tracking
+**Changes**:
+  - Refactored GameScreen air item spawning from separate loop to inline generation
+  - Removed platformsWithoutAirItem Set (no longer needed)
+  - Cleaned up clearEntities() and pruneEntities()
+**Testing**: Build PASSED (lint + tsc + vite all clean)
+**Context**: CONSTRUCTION - Unit 3 Air Item Probability Fix complete
+
+---

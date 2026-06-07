@@ -32,7 +32,6 @@ export class GameScreen extends Container {
   private platforms: Platform[] = [];
   private groundItems: GroundItem[] = [];
   private airItems: AirItem[] = [];
-  private platformsWithoutAirItem: Set<Platform> = new Set();
 
   // HUD elements
   private scoreLabel: Text;
@@ -191,40 +190,36 @@ export class GameScreen extends Container {
     for (const p of newPlatforms) {
       this.platforms.push(p);
       this.worldContainer.addChild(p);
-      this.platformsWithoutAirItem.add(p);
+
+      // Spawn air item in gap between last platform and new platform (only once when new platform is created)
+      const lastPlatIdx = this.platforms.length - 2;
+      if (lastPlatIdx >= 0) {
+        const lastPlat = this.platforms[lastPlatIdx];
+        if (Math.random() < GAME_PARAMS.items.airItem.spawnFrequency) {
+          const gapMinX = lastPlat.x + lastPlat.width;
+          const gapMaxX = p.x;
+          const gapMinY = Math.min(lastPlat.y, p.y);
+          const gapMaxY = Math.max(lastPlat.y, p.y);
+
+          const airItemX = gapMinX + Math.random() * (gapMaxX - gapMinX);
+          const airItemY = gapMinY + Math.random() * (gapMaxY - gapMinY);
+
+          const airItem = new AirItem(
+            airItemX,
+            airItemY,
+            GAME_PARAMS.items.airItem,
+            GAME_PARAMS.items.pickupRadius,
+          );
+          this.airItems.push(airItem);
+          this.worldContainer.addChild(airItem);
+        }
+      }
     }
     for (const item of newItems) {
       if (item instanceof GroundItem) {
         this.groundItems.push(item);
       }
       this.worldContainer.addChild(item);
-    }
-
-    // Spawn air items in gaps between consecutive platforms
-    for (let i = 0; i < this.platforms.length - 1; i++) {
-      const currentPlat = this.platforms[i];
-      const nextPlat = this.platforms[i + 1];
-      if (!this.platformsWithoutAirItem.has(nextPlat)) continue;
-
-      if (Math.random() < GAME_PARAMS.items.airItem.spawnFrequency) {
-        const gapMinX = currentPlat.x + currentPlat.width;
-        const gapMaxX = nextPlat.x;
-        const gapMinY = Math.min(currentPlat.y, nextPlat.y);
-        const gapMaxY = Math.max(currentPlat.y, nextPlat.y);
-
-        const airItemX = gapMinX + Math.random() * (gapMaxX - gapMinX);
-        const airItemY = gapMinY + Math.random() * (gapMaxY - gapMinY);
-
-        const airItem = new AirItem(
-          airItemX,
-          airItemY,
-          GAME_PARAMS.items.airItem,
-          GAME_PARAMS.items.pickupRadius,
-        );
-        this.airItems.push(airItem);
-        this.worldContainer.addChild(airItem);
-        this.platformsWithoutAirItem.delete(nextPlat);
-      }
     }
 
     this.pruneEntities();
@@ -277,7 +272,6 @@ export class GameScreen extends Container {
       p.destroy();
     }
     this.platforms = [];
-    this.platformsWithoutAirItem.clear();
 
     for (const item of this.groundItems) {
       this.worldContainer.removeChild(item);
@@ -336,7 +330,6 @@ export class GameScreen extends Container {
       if (p.right() + this.worldContainer.x < -50) {
         this.worldContainer.removeChild(p);
         p.destroy();
-        this.platformsWithoutAirItem.delete(p);
         return false;
       }
       return true;

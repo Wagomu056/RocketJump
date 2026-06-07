@@ -10,6 +10,32 @@ import { CreationEngine } from "./engine/engine";
 import "@pixi/sound";
 // import "@esotericsoftware/spine-pixi-v8";
 
+// Disable iOS Safari magnifier and text selection UI on long-press
+if (typeof document !== "undefined") {
+  const pixiContainer = document.querySelector("#pixi-container");
+  const preventTouchUI = (e: TouchEvent) => {
+    // Allow events on canvas only, prevent magnifier on everything else
+    if (e.target === document.querySelector("canvas")) {
+      e.preventDefault();
+    }
+  };
+
+  // Prevent magnifier on all touch events
+  document.addEventListener("touchstart", preventTouchUI, { passive: false });
+  document.addEventListener("touchmove", preventTouchUI, { passive: false });
+  document.addEventListener("touchend", preventTouchUI, { passive: false });
+  document.addEventListener("gesturestart", (e) => {
+    e.preventDefault();
+  });
+
+  // Prevent context menu
+  if (pixiContainer) {
+    pixiContainer.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+  }
+}
+
 // Create a new creation engine instance
 const engine = new CreationEngine();
 setEngine(engine);

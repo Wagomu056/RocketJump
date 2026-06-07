@@ -5,7 +5,9 @@ import { Container, Text } from "pixi.js";
 
 import { GAME_PARAMS } from "../config/GameParams";
 import { engine } from "../getEngine";
-import { FuelItem, ITEM_PICKUP_RADIUS } from "../game/FuelItem";
+import { AirItem } from "../game/AirItem";
+import { GroundItem } from "../game/GroundItem";
+import type { Item } from "../game/Item";
 import { JetParticleSystem } from "../game/JetParticleSystem";
 import { Platform } from "../game/Platform";
 import { PlatformGenerator } from "../game/PlatformGenerator";
@@ -28,7 +30,9 @@ export class GameScreen extends Container {
   private particles!: JetParticleSystem;
   private platformGen!: PlatformGenerator;
   private platforms: Platform[] = [];
-  private fuelItems: FuelItem[] = [];
+  private groundItems: GroundItem[] = [];
+  private airItems: AirItem[] = [];
+  private platformsWithoutAirItem: Set<Platform> = new Set();
 
   // HUD elements
   private scoreLabel: Text;
@@ -141,7 +145,10 @@ export class GameScreen extends Container {
     }
 
     // 3. Item animation
-    for (const item of this.fuelItems) {
+    for (const item of this.groundItems) {
+      item.update(ticker);
+    }
+    for (const item of this.airItems) {
       item.update(ticker);
     }
 
@@ -184,11 +191,42 @@ export class GameScreen extends Container {
     for (const p of newPlatforms) {
       this.platforms.push(p);
       this.worldContainer.addChild(p);
+      this.platformsWithoutAirItem.add(p);
     }
     for (const item of newItems) {
-      this.fuelItems.push(item);
+      if (item instanceof GroundItem) {
+        this.groundItems.push(item);
+      }
       this.worldContainer.addChild(item);
     }
+
+    // Spawn air items in gaps between consecutive platforms
+    for (let i = 0; i < this.platforms.length - 1; i++) {
+      const currentPlat = this.platforms[i];
+      const nextPlat = this.platforms[i + 1];
+      if (!this.platformsWithoutAirItem.has(nextPlat)) continue;
+
+      if (Math.random() < GAME_PARAMS.items.airItem.spawnFrequency) {
+        const gapMinX = currentPlat.x + currentPlat.width;
+        const gapMaxX = nextPlat.x;
+        const gapMinY = Math.min(currentPlat.y, nextPlat.y);
+        const gapMaxY = Math.max(currentPlat.y, nextPlat.y);
+
+        const airItemX = gapMinX + Math.random() * (gapMaxX - gapMinX);
+        const airItemY = gapMinY + Math.random() * (gapMaxY - gapMinY);
+
+        const airItem = new AirItem(
+          airItemX,
+          airItemY,
+          GAME_PARAMS.items.airItem,
+          GAME_PARAMS.items.pickupRadius,
+        );
+        this.airItems.push(airItem);
+        this.worldContainer.addChild(airItem);
+        this.platformsWithoutAirItem.delete(nextPlat);
+      }
+    }
+
     this.pruneEntities();
 
     // 9. HUD
@@ -239,12 +277,19 @@ export class GameScreen extends Container {
       p.destroy();
     }
     this.platforms = [];
+    this.platformsWithoutAirItem.clear();
 
-    for (const item of this.fuelItems) {
+    for (const item of this.groundItems) {
       this.worldContainer.removeChild(item);
       item.destroy();
     }
-    this.fuelItems = [];
+    this.groundItems = [];
+
+    for (const item of this.airItems) {
+      this.worldContainer.removeChild(item);
+      item.destroy();
+    }
+    this.airItems = [];
 
     this.particles?.clear();
   }
@@ -267,15 +312,22 @@ export class GameScreen extends Container {
     }
 
     // Item pickup: circular proximity
-    const rSq = ITEM_PICKUP_RADIUS * ITEM_PICKUP_RADIUS;
-    for (const item of this.fuelItems) {
-      if (item.collected) continue;
+    const checkItemCollision = (item: Item): void => {
+      if (item.collected) return;
       const dx = this.ship.x - item.x;
       const dy = this.ship.y - item.y;
+      const rSq = item.getCollisionRadius() ** 2;
       if (dx * dx + dy * dy < rSq) {
         item.collect(this.ship);
         this.particles.surge(this.ship.x, this.ship.y);
       }
+    };
+
+    for (const item of this.groundItems) {
+      checkItemCollision(item);
+    }
+    for (const item of this.airItems) {
+      checkItemCollision(item);
     }
   }
 
@@ -284,13 +336,23 @@ export class GameScreen extends Container {
       if (p.right() + this.worldContainer.x < -50) {
         this.worldContainer.removeChild(p);
         p.destroy();
+        this.platformsWithoutAirItem.delete(p);
         return false;
       }
       return true;
     });
 
-    this.fuelItems = this.fuelItems.filter((item) => {
-      // Off-screen: item's screen X is past the left edge (same units as platform check)
+    this.groundItems = this.groundItems.filter((item) => {
+      const offScreen = item.x + this.worldContainer.x < -50;
+      if (item.collected || offScreen) {
+        this.worldContainer.removeChild(item);
+        item.destroy();
+        return false;
+      }
+      return true;
+    });
+
+    this.airItems = this.airItems.filter((item) => {
       const offScreen = item.x + this.worldContainer.x < -50;
       if (item.collected || offScreen) {
         this.worldContainer.removeChild(item);

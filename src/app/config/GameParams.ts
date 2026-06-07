@@ -11,8 +11,20 @@ export const GAME_PARAMS = {
   fuelRecoverRate: 0.8,
   cooldownDuration: 1.0, // seconds
 
-  // Item effect (spec §7)
-  fuelMaxUpgradeAmount: 15,
+  // Item system
+  items: {
+    pickupRadius: 30, // Base collision detection radius (multiplied by item size)
+    groundItem: {
+      size: 1.0, // Size multiplier for visuals and collision
+      spawnFrequency: 0.4, // Probability [0-1] of spawning on each platform
+      effectAmount: 10, // Fuel max increase value
+    },
+    airItem: {
+      size: 1.5, // Size multiplier for visuals and collision
+      spawnFrequency: 0.4, // Probability [0-1] of spawning in each air gap
+      effectAmount: 25, // Fuel max increase value
+    },
+  },
 
   // Camera
   cameraDeadZoneRatio: 0.4, // ship must be within left 40% of screen

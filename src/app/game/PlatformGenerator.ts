@@ -1,6 +1,7 @@
 import { GAME_PARAMS } from "../config/GameParams";
 
-import { FuelItem } from "./FuelItem";
+import { GroundItem } from "./GroundItem";
+import type { Item } from "./Item";
 import { Platform } from "./Platform";
 
 export class PlatformGenerator {
@@ -27,9 +28,9 @@ export class PlatformGenerator {
     worldX: number,
     screenW: number,
     score: number,
-  ): { platforms: Platform[]; items: FuelItem[] } {
+  ): { platforms: Platform[]; items: Item[] } {
     const platforms: Platform[] = [];
-    const items: FuelItem[] = [];
+    const items: Item[] = [];
 
     const cameraRight = -worldX + screenW;
     const spawnUntil = cameraRight + GAME_PARAMS.worldBuffer;
@@ -56,8 +57,15 @@ export class PlatformGenerator {
 
       platforms.push(new Platform(x, y, platformW));
 
-      if (Math.random() < GAME_PARAMS.itemSpawnChance) {
-        items.push(new FuelItem(x + platformW / 2, y - 25));
+      if (Math.random() < GAME_PARAMS.items.groundItem.spawnFrequency) {
+        items.push(
+          new GroundItem(
+            x + platformW / 2,
+            y - 25,
+            GAME_PARAMS.items.groundItem,
+            GAME_PARAMS.items.pickupRadius,
+          ),
+        );
       }
 
       this.lastPlatformY = y;

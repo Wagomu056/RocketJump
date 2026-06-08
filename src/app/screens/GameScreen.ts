@@ -520,15 +520,21 @@ export class GameScreen extends Container {
 
     // Alternate between visible and faded
     if (blinkPhase < 0.5) {
-      this.ship.alpha = 1;
-      // Set tint color based on damage type
+      // Both small and large damage flash red
+      this.ship.tint = 0xff4444; // Red
       if (this.flashingType === "large") {
-        this.ship.tint = 0xff4444; // Red
+        this.ship.alpha = 1;
       } else {
-        this.ship.tint = 0xffffff; // White
+        this.ship.alpha = 1;
       }
     } else {
-      this.ship.alpha = 0.3; // Faded out
+      // Both small and large damage show faded state
+      this.ship.tint = 0xff4444; // Keep red
+      if (this.flashingType === "large") {
+        this.ship.alpha = 0.3; // Large damage: fade more
+      } else {
+        this.ship.alpha = 0.5; // Small damage: fade less
+      }
     }
   }
 

@@ -63,8 +63,8 @@ export const GAME_PARAMS = {
   flashing: {
     smallDuration: 0.1, // seconds
     smallBlinks: 1,
-    largeDuration: 0.3,
-    largeBlinks: 3,
+    largeDuration: 0.4,
+    largeBlinks: 4,
   },
 
   // Smoke particle effects

@@ -567,3 +567,38 @@ Awaiting user approval.
 **Context**: CONSTRUCTION - Unit 4 flashing effect fixed
 
 ---
+
+## Unit 4: White Flash Visual Refinement (Attempt 1)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Issue**: Small damage flashing looked like transparency fade instead of white flash
+**Root Cause**: Using alpha blinking (alpha 1.0 → 0.3) created a fading effect, not a color flash
+**First Solution**: Use color tinting instead of alpha for small damage flash
+  - Small damage: flash between bright cyan-white (0xccffff) and darkened (0x888888)
+  - Large damage: keep red tint (0xff4444) with alpha fade (1.0 → 0.3)
+**Issue**: User requested to make small damage red like large damage
+
+---
+
+## Unit 4: Unified Red Flash (Final)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Request**: "小ダメージの点滅も赤にしてください。大ダメージと同じ色に" - Make small damage flash red too, same as large damage
+**Solution**: 
+  - Both small and large damage flash red (0xff4444)
+  - Differentiated by fade intensity:
+    - Small damage: red → alpha 0.5 (lighter fade)
+    - Large damage: red → alpha 0.3 (darker fade)
+**Visual Effect**:
+  - Small damage: Quick red flash with 6 blinks (0.6s total) - lighter fade
+  - Large damage: Slower red flash with 8 blinks (1.2s total) - deeper fade
+  - Clear visual hierarchy through flash speed and fade intensity
+**Implementation**:
+  - Unified red tint for both damage types
+  - Different alpha fade values to distinguish severity
+  - Faster/lighter flash for small damage, slower/deeper fade for large damage
+**Files Modified**:
+  - src/app/screens/GameScreen.ts (unified red flash logic)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 flash visual complete
+
+---

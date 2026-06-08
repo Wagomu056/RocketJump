@@ -602,3 +602,163 @@ Awaiting user approval.
 **Context**: CONSTRUCTION - Unit 4 flash visual complete
 
 ---
+
+## Unit 4: Explosion Effect Fix
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Issue**: Explosion effect not showing when ship dies (health reaches 0)
+**Root Cause**: update() method returned early when gameOver = true, preventing particles.update() from running
+  - Flow: triggerGameOver() sets gameOver = true → next frame, update() returns immediately → particles never update
+  - Result: explosion particles spawned but never animated, invisible to player
+**Solution**: Always update particles, even when gameOver is true
+  - Moved particles.update() to the beginning of update() method
+  - Moved gameOver return check AFTER particles.update()
+  - Now: particles continue to animate during 0.5s explosion delay
+**Implementation**:
+  - Particles update at START of update() loop
+  - Game logic skipped if gameOver = true
+  - Explosion particles spawn and animate for 0.5s before GameOverScreen transition
+  - Timing: particles visible during animate() duration before showScreen() hides them
+**Files Modified**:
+  - src/app/screens/GameScreen.ts (particle update order and gameOver check placement)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 explosion effect fixed
+
+---
+
+## Unit 4: Epic Explosion Effect Customization (v1)
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Request**: Customize explosion to be more dramatic with yellow/black particles, parabolic trajectory, 2x larger particles, 2x longer delay
+**Initial Implementation**:
+  - Created new spawnExplosion() method in JetParticleSystem
+  - Particle customizations:
+    * Color: Alternating yellow (0xffdd00) and black (0x222222) for fire effect
+    * Size: 4-10px (2x larger than regular particles)
+    * Direction: 45-degree angles (upper-left -135° and upper-right -45°)
+    * Velocity: 5-10 px/s
+    * Lifetime: 1.2s
+  - Delay: 0.5s → 1.0s before GameOverScreen transition
+  - Particle count: 30
+
+---
+
+## Unit 4: Epic Explosion Effect Refinement (v2 - Final)
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Request**: Even more dramatic - larger particles, slower velocity (for visible parabolic arc), 3.0s delay, 2x more particles
+**Final Implementation**:
+  - Updated spawnExplosion() method:
+    * Particle size: 8-18px (even larger, 2x v1)
+    * Initial velocity: 1.5-3.5 px/s (much slower for visible parabolic arc)
+    * Lifetime: 3.5s (matches 3.0s delay)
+  - Updated triggerGameOver():
+    * Particle count: 30 → 60 (2x more particles for epic effect)
+    * Delay: 1.0s → 3.0s (3 seconds to watch the explosion)
+**Visual Effect**:
+  - 60 large yellow and black particles burst outward
+  - Launch from 45-degree angles with slow initial velocity
+  - Clear parabolic trajectory visible as gravity pulls them downward
+  - Dramatic 3-second explosion sequence before game over screen
+  - Slow, graceful, visually impressive effect
+**Particle Physics**:
+  - Initial velocity: very slow (1.5-3.5 px/s)
+  - Gravity pulls downward gradually
+  - 3.5s lifetime allows complete arc before fading
+  - Visual: slow launch → peak → graceful fall
+**Files Modified**:
+  - src/app/game/JetParticleSystem.ts (updated spawnExplosion parameters)
+  - src/app/screens/GameScreen.ts (updated particle count and delay)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 epic explosion effect final
+
+---
+
+## Unit 4: Parabolic Trajectory Fix (v1)
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Issue**: Particles not following parabolic trajectory - just moving in straight lines
+**Root Cause**: JetParticleSystem.update() was not applying gravity to particles
+**First Solution**: Apply gravity to all particles
+  - Added gravity (0.25) to all particles
+  - Result: all particles follow parabolic arcs
+
+**User Refinement Request**: Different behavior for different colors
+  - Yellow particles: straight line (no gravity)
+  - Black particles: parabolic arc (with gravity)
+
+---
+
+## Unit 4: Dual Particle Physics (Final)
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Request**: Yellow particles straight (no gravity), black particles parabolic (with gravity)
+**Implementation**:
+  - Added `hasGravity?: boolean` flag to Particle interface
+  - Modified update() to conditionally apply gravity:
+    ```typescript
+    if (p.hasGravity) {
+      p.vy += gravity * dt;
+    }
+    ```
+  - Updated spawnExplosion():
+    * Yellow particles: `hasGravity: false` → straight line trajectories
+    * Black particles: `hasGravity: true` → parabolic arcs with gravity
+**Visual Effect**:
+  - Yellow particles: shoot out straight at 45-degree angles, maintain trajectory
+  - Black particles: shoot out, gradually decelerate as gravity pulls down, clear arc
+  - Combined effect: dynamic, visually interesting explosion
+**Physics**:
+  - Yellow: velocity unchanged over time (vx, vy constant)
+  - Black: vy increases due to gravity (accelerates downward)
+**Files Modified**:
+  - src/app/game/JetParticleSystem.ts (Particle interface, update method, spawnExplosion)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 dual particle physics complete
+
+---
+
+## Unit 4: Black Particle Tuning
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Request**: Black particles smaller (1/3 size), faster initial velocity (2x speed)
+**Implementation**:
+  - Conditional sizing:
+    * Yellow particles: 8-18px (large)
+    * Black particles: (8-18px) / 3 = 2.7-6px (small)
+  - Conditional velocity:
+    * Yellow particles: 1.5-3.5 px/s (slow)
+    * Black particles: (1.5-3.5) × 2 = 3-7 px/s (fast)
+**Visual Effect**:
+  - Yellow particles: large, slow, straight lines (visible longer)
+  - Black particles: small, fast, parabolic arcs (quick & graceful)
+  - Contrast creates dynamic, interesting explosion
+**Code Pattern**:
+  ```typescript
+  const size = isYellow ? 8 + Math.random() * 10 : (8 + Math.random() * 10) / 3;
+  const speed = isYellow ? baseSpeed : baseSpeed * 2;
+  ```
+**Files Modified**:
+  - src/app/game/JetParticleSystem.ts (spawnExplosion method)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 particle tuning complete
+
+---
+
+## Unit 4: Ship Visibility on Game Over
+**Timestamp**: 2026-06-09T00:00:00Z
+**User Request**: Hide ship during explosion effect
+**Implementation**:
+  - Added `this.ship.visible = false;` in triggerGameOver()
+  - Ship hidden immediately when explosion particles spawn
+  - Allows clean explosion view without ship body obscuring particles
+**Visual Effect**:
+  - Player dies → ship disappears
+  - Explosion particles (yellow & black) burst from last ship position
+  - Clean, dramatic 3-second explosion sequence
+  - Game over feels more cinematic
+**Files Modified**:
+  - src/app/screens/GameScreen.ts (triggerGameOver method)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 ship visibility fixed
+
+---

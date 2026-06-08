@@ -136,15 +136,20 @@ export class GameScreen extends Container {
   // ─── Game loop ──────────────────────────────────────────────────────────
 
   public update(ticker: Ticker): void {
-    if (this.paused || this.gameOver) return;
+    if (this.paused) return;
+
+    // Update particles even during game over (for explosion effect)
+    this.particles.update(ticker);
+
+    // Stop game logic if game is over, but particles continue to animate
+    if (this.gameOver) return;
 
     // 1. Ship physics + fuel FSM
     const touchXWorld = this.pointerX - this.worldContainer.x;
     const touchYWorld = this.pointerY - this.worldContainer.y;
     this.ship.update(ticker, this.isPointerDown, touchXWorld, touchYWorld);
 
-    // 2. Particles
-    this.particles.update(ticker);
+    // 2. Spawn new particles if thrusting
     if (this.ship.isThrusting) {
       const count = 3 + Math.floor(Math.random() * 3);
       this.particles.spawnParticles(
@@ -472,18 +477,23 @@ export class GameScreen extends Container {
     this.gameOver = true;
     userSettings.lastScore = this.score;
 
-    // Explosion animation: spawn particles rapidly
-    for (let i = 0; i < 12; i++) {
-      const angle = (i / 12) * Math.PI * 2;
-      this.particles.spawnParticles(this.ship.x, this.ship.y, angle, 2);
-    }
+    // Explosion animation: spawn particles (yellow and black, parabolic trajectory)
+    const explosionParticleCount = 60; // Many particles for epic effect
+    this.particles.spawnExplosion(
+      this.ship.x,
+      this.ship.y,
+      explosionParticleCount,
+    );
 
-    // Transition to GameOverScreen after explosion delay
+    // Hide the ship during explosion
+    this.ship.visible = false;
+
+    // Transition to GameOverScreen after explosion delay (3.0s for dramatic effect)
     void animate(
       { time: 0 },
-      { time: 0.5 },
+      { time: 3.0 },
       {
-        duration: 0.5,
+        duration: 3.0,
         onComplete: () => {
           void engine().navigation.showScreen(ScoreScreen);
         },

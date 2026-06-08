@@ -6,6 +6,7 @@ interface Particle {
   vx: number;
   vy: number;
   life: number;
+  hasGravity?: boolean; // Optional: apply gravity to this particle
 }
 
 export class JetParticleSystem extends Container {
@@ -100,11 +101,57 @@ export class JetParticleSystem extends Container {
     }
   }
 
+  /**
+   * Explosion effect: yellow particles in straight lines, black particles with parabolic trajectory.
+   */
+  public spawnExplosion(worldX: number, worldY: number, count: number): void {
+    for (let i = 0; i < count; i++) {
+      // Alternate between yellow and black colors
+      const isYellow = Math.random() > 0.5;
+      const color = isYellow ? 0xffdd00 : 0x222222; // Yellow or black
+      // Yellow: large (8-18px), Black: 1/3 size (2.7-6px)
+      const size = isYellow
+        ? 8 + Math.random() * 10
+        : (8 + Math.random() * 10) / 3;
+
+      // 45-degree angles: upper-left (-135°) and upper-right (-45°)
+      const direction = Math.random() > 0.5 ? -135 : -45;
+      const directionRad = (direction * Math.PI) / 180;
+      const spread = (Math.random() - 0.5) * 30; // Add some spread around the angle
+      const angle = directionRad + (spread * Math.PI) / 180;
+
+      // Yellow: slower (1.5-3.5), Black: 2x faster (3-7)
+      const baseSpeed = 1.5 + Math.random() * 2;
+      const speed = isYellow ? baseSpeed : baseSpeed * 2;
+
+      const gfx = new Graphics();
+      gfx.circle(0, 0, size).fill(color);
+      gfx.position.set(
+        worldX + (Math.random() - 0.5) * 10,
+        worldY + (Math.random() - 0.5) * 10,
+      );
+      this.addChild(gfx);
+
+      this.particles.push({
+        gfx,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 3.5, // Much longer lifetime (3.5s)
+        hasGravity: !isYellow, // Black particles have gravity (parabolic), yellow ones don't (straight line)
+      });
+    }
+  }
+
   public update(ticker: Ticker): void {
     const dt = ticker.deltaTime;
+    const gravity = 0.25; // Apply gravity to particles (same as ship physics)
     const toRemove: Particle[] = [];
 
     for (const p of this.particles) {
+      // Apply gravity only if this particle has gravity enabled
+      if (p.hasGravity) {
+        p.vy += gravity * dt;
+      }
       p.gfx.x += p.vx * dt;
       p.gfx.y += p.vy * dt;
       p.life -= 0.04 * dt;

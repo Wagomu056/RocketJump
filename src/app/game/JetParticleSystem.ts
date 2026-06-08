@@ -71,6 +71,35 @@ export class JetParticleSystem extends Container {
     }
   }
 
+  /**
+   * Smoke effect: gray particles drifting upward from ship center (health damage).
+   */
+  public spawnSmoke(worldX: number, worldY: number, count: number): void {
+    for (let i = 0; i < count; i++) {
+      // Upward spread with slight randomness
+      const spread = (Math.random() - 0.5) * 0.6;
+      const angle = -Math.PI / 2 + spread;
+      const speed = 1 + Math.random() * 2;
+      const size = 1.5 + Math.random() * 2;
+
+      const gfx = new Graphics();
+      gfx.circle(0, 0, size).fill(0x8b7d8b);
+      gfx.alpha = 0.6;
+      gfx.position.set(
+        worldX + (Math.random() - 0.5) * 8,
+        worldY + (Math.random() - 0.5) * 8,
+      );
+      this.addChild(gfx);
+
+      this.particles.push({
+        gfx,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0.8,
+      });
+    }
+  }
+
   public update(ticker: Ticker): void {
     const dt = ticker.deltaTime;
     const toRemove: Particle[] = [];

@@ -50,7 +50,35 @@ export const GAME_PARAMS = {
   worldBuffer: 600, // px ahead of camera to keep populated
   pixelsPerMeter: 10, // score = floor(totalScrolled / pixelsPerMeter)
 
+  // Health system
+  health: {
+    maxHealth: 100,
+    smallDamageThreshold: 6, // px/s velocity
+    smallDamageAmount: 5,
+    largeDamageThreshold: 12, // px/s velocity
+    largeDamageAmount: 40,
+  },
+
+  // Flashing feedback
+  flashing: {
+    smallDuration: 0.1, // seconds
+    smallBlinks: 1,
+    largeDuration: 0.3,
+    largeBlinks: 3,
+  },
+
+  // Smoke particle effects
+  smoke: {
+    lightThreshold: 0.25, // 25% health
+    lightParticlesPerFrame: 2,
+    heavyThreshold: 0.1, // 10% health
+    heavyParticlesPerFrame: 5,
+  },
+
   // Jet angle limits (spec angle system: 0° = straight up, CCW to 180° = straight down)
   jetAngleMinDeg: 170, // minimum angle — 0 = straight up (clamped when touch is upper side)
   jetAngleMaxDeg: 170, // maximum angle — 180 = straight down (clamped when touch is lower side)
+
+  // Debug features
+  debugShowLandingVelocity: true, // Display landing velocity at ship position for tuning
 } as const;

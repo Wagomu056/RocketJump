@@ -336,3 +336,234 @@
 **Final Status**: ✅ COMPLETE and VERIFIED
 
 ---
+
+## Unit 4: Life System — New Request
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "ライフシステムを追加して。プレイヤーは落下速度が速い状態で着地するとダメージを受けるようになります。ダメージは2段階でそれぞれ、速度とどれくらいのダメージ量かはパラメータで設定できるようにして。ダメージを受けたら機体が点滅するようにして。小ダメージは真っ白に点滅、大ダメージは赤く点滅で。ライフは機体の右側に出して。代わりに、ジェットのメーターは左に移動して。ライフが25%以下になると機体から煙がちょっと出るようになって、10%以下になると多く煙が出るようにして。ライフが0になると機体が爆発してゲームオーバーにして。ゲームオーバーのフローは落下した時と全く同じフローを通るようにして。AI-DLCで実装して"
+**Translation**: "Add life system. Player takes damage when landing at high fall speed (2 damage tiers, each with configurable speed and damage amount). Ship flashes white on small damage, red on large damage. Health bar on right side. Move jet meter to left. Smoke at 25% health (light), 10% health (heavy). At 0 health, ship explodes and game over using same flow as falling off screen. Implement with AI-DLC."
+**AI Response**: Understood. Unit 4: Life System is a clear, comprehensive feature request with specific mechanics. Scope is localized to GameScreen with parametric configuration. Proceeding with adaptive Requirements Analysis → Workflow Planning → Code Generation.
+**Context**: INCEPTION - Unit 4 Life System start
+
+---
+
+## Unit 4: Requirements Analysis — Questions Presented
+**Timestamp**: 2026-06-08T00:00:00Z
+**AI Response**: Created unit4-requirement-verification-questions.md with 5 clarifying questions:
+  Q1: Initial health amount and default damage tier thresholds/amounts
+  Q2: Flashing duration and frequency for small vs large damage
+  Q3: Smoke particle counts at 25% and 10% health thresholds
+  Q4: Game over explosion animation timing and transition behavior
+  Q5: Health UI visual design (bar vs text, colors, gradient)
+Awaiting user answers (GATE).
+**Context**: INCEPTION - Requirements Analysis (Step 6 gate)
+
+---
+
+## Unit 4: Requirements Analysis — Answers Received
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: Filled in all 5 answers in unit4-requirement-verification-questions.md:
+  Q1: Use example values (max 100, small threshold 300px/s damage 25, large threshold 500px/s damage 50), all parameterized
+  Q2: Use example values (small 0.6s/6 blinks, large 1.2s/8 blinks), all parameterized
+  Q3: Smoke from ship center, example values (25%: 1-2 particles/frame, 10%: 3-5 particles/frame), all parameterized
+  Q4: Use example (0.5s explosion → GameOverScreen)
+  Q5: Horizontal bar, green→yellow→red gradient, no text display
+**AI Response**: Generated comprehensive unit4-requirements.md with intent analysis, 5 functional requirements, 4 non-functional requirements, user scenarios, integration points, and success criteria.
+**Context**: INCEPTION - Requirements Analysis (Step 7)
+
+---
+
+## Unit 4: Requirements Analysis — Ready for Approval
+**Timestamp**: 2026-06-08T00:00:00Z
+**Status**: Requirements document complete. Awaiting user approval before proceeding to Workflow Planning.
+**Context**: INCEPTION - Requirements Analysis (Step 9 gate)
+
+---
+
+## Unit 4: Requirements Analysis — Approved
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: Requirements approved. Proceeding to Workflow Planning.
+**Context**: INCEPTION - Workflow Planning start
+
+---
+
+## Unit 4: Workflow Planning — Plan Created
+**Timestamp**: 2026-06-08T00:00:00Z
+**AI Response**: Created unit4-execution-plan.md with scope analysis:
+  - Transformation Type: Single component enhancement (GameScreen)
+  - Risk Level: Low (isolated, additive changes, reuses existing systems)
+  - Recommendation: Skip Application Design, Functional Design, all NFR stages, Infrastructure Design
+  - Recommendation: Execute Code Generation (Part 1 planning + Part 2 generation) and Build and Test
+  - Estimated Timeline: ~1.5 hours
+  - Workflow visualization and success criteria included
+Awaiting user approval.
+**Context**: INCEPTION - Workflow Planning (Step 9 gate)
+
+---
+
+## Unit 4: Workflow Planning — Approved
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: Plan approved. Proceeding to Code Generation Phase. Loading code-generation.md rules.
+**Context**: CONSTRUCTION - Unit 4 Code Generation start (Part 1: Planning)
+
+---
+
+## Unit 4: Code Generation Plan Created (Part 1: Planning)
+**Timestamp**: 2026-06-08T00:00:00Z
+**AI Response**: Created unit4-code-generation-plan.md with 14 explicit implementation steps:
+  Step 1: Analyze integration points
+  Step 2: Extend GAME_PARAMS (health, flashing, smoke configs)
+  Step 3: Add health state properties to GameScreen
+  Step 4: Add health bar UI (right side, gradient colors)
+  Step 5: Reposition fuel meter (left side)
+  Step 6: Add flashing animation logic
+  Step 7: Add smoke particle emission
+  Step 8: Add damage detection to collision logic
+  Step 9: Add game over condition and explosion
+  Step 10: Initialize health state in initGame()
+  Step 11: Verify parameter integration and type safety
+  Step 12: ESLint and Prettier checks
+  Step 13: Build verification (npm run build)
+  Step 14: Manual gameplay testing (8 test scenarios)
+Primary files: GameParams.ts, GameScreen.ts, Ship.ts
+Awaiting user approval.
+**Context**: CONSTRUCTION - Unit 4 Code Generation (Part 1 gate)
+
+---
+
+## Unit 4: Code Generation Plan Approved (Part 1: Planning Complete)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: Plan approved. Proceeding to Code Generation Part 2 (Implementation).
+**Context**: CONSTRUCTION - Unit 4 Code Generation (Part 2: Execution start)
+
+---
+
+## Unit 4: Code Generation — Executed (Part 2: Implementation Complete)
+**Timestamp**: 2026-06-08T00:00:00Z
+**Execution Steps Completed**:
+  ✓ Step 1: Analyzed integration points (collision detection, particle system, game over flow)
+  ✓ Step 2: Extended GAME_PARAMS with health, flashing, smoke configurations
+  ✓ Step 3: Added health state properties to GameScreen (currentHealth, isFlashing, flashingTimer, etc.)
+  ✓ Step 4: Added health bar UI method with gradient colors (green/yellow/red) on right side
+  ✓ Step 5: Repositioned fuel meter to left side (Ship class GAUGE_X constant)
+  ✓ Step 6: Added flashing animation logic with configurable duration and blink frequency
+  ✓ Step 7: Added smoke particle emission based on health thresholds (spawnSmoke method)
+  ✓ Step 8: Added damage detection to collision logic (velocity-based damage triggers)
+  ✓ Step 9: Added game over condition with explosion animation (0.5s) and transition
+  ✓ Step 10: Initialized health state in initGame() method
+  ✓ Step 11: Verified all parameters in GAME_PARAMS are correctly integrated
+  ✓ Step 12: ESLint and Prettier formatting checks passed
+  ✓ Step 13: Full build verification passed (lint + tsc + vite build 0 errors)
+**Files Modified**:
+  - src/app/config/GameParams.ts (added health, flashing, smoke configs)
+  - src/app/screens/GameScreen.ts (added health management, damage detection)
+  - src/app/game/Ship.ts (repositioned fuel meter to left, added ship-local health bar)
+  - src/app/game/JetParticleSystem.ts (added spawnSmoke method)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RUNNING on port 8080
+**Context**: CONSTRUCTION - Unit 4 Code Generation complete (Part 2)
+
+---
+
+## Unit 4: Health Bar Repositioning (UI Refinement)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Request**: "ライフバーはverticalに変更で、機体の右側に追従するようにしてください。ジェットのメーターと全く同じ感じで"
+**Translation**: "Make health bar vertical and follow the ship on the right side. Exactly like the jet meter"
+**Changes Made**:
+  - Moved health bar from fixed HUD (GameScreen) to ship-local (Ship class)
+  - Health bar now follows ship position exactly like fuel gauge (on right side)
+  - Added HEALTH_BAR_X, HEALTH_BAR_BASE_H, HEALTH_BAR_W, HEALTH_BAR_BOTTOM_Y constants to Ship
+  - Added updateHealthBar() method to Ship (similar to updateFuelGauge)
+  - Health bar renders vertically with gradient colors (green → yellow → red)
+  - Synchronized health state between GameScreen and Ship for rendering
+  - Updated initGame() to sync ship's health with current health
+  - Removed HUD-based updateHealthBar() and healthBarGfx from GameScreen
+**Files Modified**:
+  - src/app/game/Ship.ts (added health bar rendering, properties, update method)
+  - src/app/screens/GameScreen.ts (removed HUD health bar, sync health with ship)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 UI refinement complete
+
+---
+
+## Unit 4: Debug Landing Velocity Display (Tuning Feature)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Request**: "ダメージを受ける速度を調整するために、着地時にどれくらいの速度で着地したかを画面上に表示するようにしてください。表示箇所は着地時の機体位置にお願いします。機体に隠れてしまわないように一番手前に書いてくださいね．この機能はデバッグ機能なので、On/Offできるようにパラメータとして定義してください。"
+**Translation**: "Display landing velocity when landing to tune damage thresholds. Show at ship position. Make sure it's in front and not hidden. Make it a debug feature with On/Off parameter."
+**Initial Implementation**: Added showLandingVelocity() method, debug parameter, and velocity display
+**Issue Found**: Landing velocity was always showing 0 px/s
+**Root Cause**: `ship.land(topY)` sets `vy = 0` immediately, so velocity was being read AFTER it was reset
+**Fix Applied**: 
+  - Read `landingVelocity` BEFORE calling `ship.land(topY)`
+  - Now correctly captures the actual velocity at the moment of landing
+**Final Implementation**:
+  - Added `debugShowLandingVelocity: true` parameter to GAME_PARAMS
+  - Created showLandingVelocity() method in GameScreen
+  - Displays velocity in yellow text (e.g., "350 px/s") at ship position
+  - Text is positioned slightly above ship (not hidden by ship body)
+  - Fades out over 2 seconds, then removed
+  - Renders in world container (moves with camera, stays in front)
+  - Velocity read BEFORE ship.land() to capture actual landing speed
+**Files Modified**:
+  - src/app/config/GameParams.ts (added debugShowLandingVelocity parameter)
+  - src/app/screens/GameScreen.ts (added showLandingVelocity method, fixed velocity reading order)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 debug feature complete and fixed
+
+---
+
+## Unit 4: Landing Velocity Display - Refinement (Attempt 1)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Issue**: Landing velocity debug display was appearing every frame while ship was sliding after landing
+**Root Cause**: Display was triggered for every landing collision, even with minimal velocity
+**First Solution**: Only show when velocity >= smallDamageThreshold (300 px/s)
+**Problem**: Threshold was too high; display never appeared
+
+---
+
+## Unit 4: Landing Velocity Display - Refinement (Final)
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Request**: "速度が1px以上から0px以下に変わった時だけ出すようにしてみてください" - Show only when velocity changes from >= 1 px/s to <= 0 px/s
+**Final Solution**: Show landing velocity display only when landingVelocity > 1 px/s
+**Logic**: 
+  - If velocity > 1 px/s: ship was actually falling → show display
+  - If velocity <= 1 px/s: ship was stationary or barely moving → don't show
+  - Detects actual landing moment, not just platform collision
+**Benefit**: 
+  - Only shows on actual landings (when ship is falling)
+  - No false triggers for gentle or near-stationary moments
+  - Clear, single display per landing event
+**Files Modified**:
+  - src/app/screens/GameScreen.ts (velocity threshold changed to > 1 px/s)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 debug feature refinement complete
+
+---
+
+## Unit 4: Flashing Effect Fix
+**Timestamp**: 2026-06-08T00:00:00Z
+**User Issue**: Flashing effect not appearing when taking damage
+**Root Cause**: Timer unit mismatch - applyFlashingEffect was using ticker.deltaTime (frame units: ~1.0 per frame) but comparing against GAME_PARAMS duration (seconds: 0.6, 1.2)
+  - Result: flashing timer incremented by 1.0 per frame, duration was 0.6 seconds
+  - At 60fps, timer reached duration in <1 frame (too fast to see)
+**Solution**: Use elapsed seconds instead of frame delta
+  - Changed to: `const elapsedSec = ticker.elapsedMS / 1000`
+  - Now timer increments by ~0.016 per frame (60fps), duration is in seconds
+  - Flashing duration (0.6s, 1.2s) works correctly
+**Implementation**:
+  - Updated applyFlashingEffect(ticker: Ticker) to use ticker parameter
+  - Calculate elapsed seconds from ticker.elapsedMS
+  - Timer now matches duration units (both in seconds)
+  - Matches pattern used elsewhere (Ship.update cooldown timer)
+**Files Modified**:
+  - src/app/screens/GameScreen.ts (applyFlashingEffect timer calculation)
+**Build Status**: ✅ PASSING (1104 modules, lint clean, tsc clean, vite build 0 errors)
+**Dev Server**: ✅ RESTARTED on port 8080
+**Context**: CONSTRUCTION - Unit 4 flashing effect fixed
+
+---

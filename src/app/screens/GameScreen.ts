@@ -51,6 +51,13 @@ export class GameScreen extends Container {
   private screenH = 640;
   private gameOver = false;
 
+  // Health system state
+  private currentHealth: number = GAME_PARAMS.health.maxHealth;
+  private maxHealth: number = GAME_PARAMS.health.maxHealth;
+  private isFlashing = false;
+  private flashingTimer = 0;
+  private flashingType: "small" | "large" | null = null;
+
   constructor() {
     super();
 
@@ -99,6 +106,9 @@ export class GameScreen extends Container {
     this.isPointerDown = false;
     this.paused = false;
     this.gameOver = false;
+    this.currentHealth = GAME_PARAMS.health.maxHealth;
+    this.isFlashing = false;
+    this.flashingTimer = 0;
   }
 
   public async pause(): Promise<void> {
@@ -158,6 +168,10 @@ export class GameScreen extends Container {
 
     // 4. Collisions
     this.checkCollisions();
+
+    // 4.5. Health effects (flashing, smoke)
+    this.applyFlashingEffect(ticker);
+    this.emitSmokeParticles();
 
     // 5. Left-edge clip
     const cameraLeft = -this.worldContainer.x;
@@ -271,6 +285,13 @@ export class GameScreen extends Container {
     this.totalScrolled = 0;
     this.score = 0;
 
+    // Health initialization
+    this.currentHealth = GAME_PARAMS.health.maxHealth;
+    this.maxHealth = GAME_PARAMS.health.maxHealth;
+    this.isFlashing = false;
+    this.flashingTimer = 0;
+    this.flashingType = null;
+
     // Starfield (replaced at index 0)
     this.removeChild(this.starfield);
     this.starfield.destroy();
@@ -281,6 +302,9 @@ export class GameScreen extends Container {
     this.ship = new Ship();
     this.ship.x = sw * 0.15;
     this.ship.y = sh * 0.65 - 40;
+    this.ship.currentHealth = this.currentHealth;
+    this.ship.maxHealth = this.maxHealth;
+    this.ship.updateHealthBar();
     this.worldContainer.addChild(this.ship);
 
     // Particles (screen-space sibling of worldContainer keeps particles in world coords)
@@ -337,7 +361,44 @@ export class GameScreen extends Container {
         if (sr > plat.x && sl < plat.right()) {
           const topY = plat.getTopY();
           if (sb >= topY && this.ship.prevBottom <= topY) {
+            // Read velocity BEFORE landing (before vy is reset to 0)
+            const landingVelocity = Math.abs(this.ship.vy);
+
             this.ship.land(topY);
+
+            // Debug: show landing velocity (only if ship was actually falling)
+            if (landingVelocity > 1) {
+              this.showLandingVelocity(landingVelocity);
+            }
+
+            // Apply damage based on landing velocity
+            if (landingVelocity >= GAME_PARAMS.health.largeDamageThreshold) {
+              // Large damage
+              this.currentHealth -= GAME_PARAMS.health.largeDamageAmount;
+              this.ship.currentHealth = this.currentHealth;
+              this.ship.updateHealthBar();
+              this.isFlashing = true;
+              this.flashingTimer = 0;
+              this.flashingType = "large";
+            } else if (
+              landingVelocity >= GAME_PARAMS.health.smallDamageThreshold
+            ) {
+              // Small damage
+              this.currentHealth -= GAME_PARAMS.health.smallDamageAmount;
+              this.ship.currentHealth = this.currentHealth;
+              this.ship.updateHealthBar();
+              this.isFlashing = true;
+              this.flashingTimer = 0;
+              this.flashingType = "small";
+            }
+
+            // Check for game over
+            if (this.currentHealth <= 0) {
+              this.currentHealth = 0;
+              this.ship.currentHealth = 0;
+              this.ship.updateHealthBar();
+              this.triggerGameOver();
+            }
           }
         }
       }
@@ -405,6 +466,127 @@ export class GameScreen extends Container {
       }
       return true;
     });
+  }
+
+  private triggerGameOver(): void {
+    this.gameOver = true;
+    userSettings.lastScore = this.score;
+
+    // Explosion animation: spawn particles rapidly
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2;
+      this.particles.spawnParticles(this.ship.x, this.ship.y, angle, 2);
+    }
+
+    // Transition to GameOverScreen after explosion delay
+    void animate(
+      { time: 0 },
+      { time: 0.5 },
+      {
+        duration: 0.5,
+        onComplete: () => {
+          void engine().navigation.showScreen(ScoreScreen);
+        },
+      },
+    );
+  }
+
+  private applyFlashingEffect(ticker: Ticker): void {
+    if (!this.isFlashing || !this.ship) return;
+
+    const elapsedSec = ticker.elapsedMS / 1000;
+    this.flashingTimer += elapsedSec;
+
+    const flashConfig =
+      this.flashingType === "large"
+        ? GAME_PARAMS.flashing.largeDuration
+        : GAME_PARAMS.flashing.smallDuration;
+
+    if (this.flashingTimer >= flashConfig) {
+      this.isFlashing = false;
+      this.flashingTimer = 0;
+      this.ship.tint = 0xffffff; // Reset to white
+      this.ship.alpha = 1;
+      return;
+    }
+
+    // Calculate blink frequency
+    const blinks =
+      this.flashingType === "large"
+        ? GAME_PARAMS.flashing.largeBlinks
+        : GAME_PARAMS.flashing.smallBlinks;
+    const blinkDuration = flashConfig / blinks;
+    const blinkPhase = (this.flashingTimer % blinkDuration) / blinkDuration;
+
+    // Alternate between visible and faded
+    if (blinkPhase < 0.5) {
+      this.ship.alpha = 1;
+      // Set tint color based on damage type
+      if (this.flashingType === "large") {
+        this.ship.tint = 0xff4444; // Red
+      } else {
+        this.ship.tint = 0xffffff; // White
+      }
+    } else {
+      this.ship.alpha = 0.3; // Faded out
+    }
+  }
+
+  private emitSmokeParticles(): void {
+    if (!this.ship || this.gameOver) return;
+
+    const healthPercent = this.currentHealth / this.maxHealth;
+    const heavyThreshold = GAME_PARAMS.smoke.heavyThreshold;
+    const lightThreshold = GAME_PARAMS.smoke.lightThreshold;
+
+    if (healthPercent <= heavyThreshold) {
+      // Heavy smoke: more particles
+      this.particles.spawnSmoke(
+        this.ship.x,
+        this.ship.y,
+        GAME_PARAMS.smoke.heavyParticlesPerFrame,
+      );
+    } else if (healthPercent <= lightThreshold) {
+      // Light smoke: fewer particles
+      this.particles.spawnSmoke(
+        this.ship.x,
+        this.ship.y,
+        GAME_PARAMS.smoke.lightParticlesPerFrame,
+      );
+    }
+  }
+
+  private showLandingVelocity(velocity: number): void {
+    if (!GAME_PARAMS.debugShowLandingVelocity || !this.ship) return;
+
+    const velocityText = new Text({
+      text: `${Math.round(velocity)} px/s`,
+      style: {
+        fontFamily: "Arial",
+        fontSize: 20,
+        fill: "#ffff00",
+        fontWeight: "bold",
+      },
+    });
+    velocityText.anchor.set(0.5, 1);
+    velocityText.position.set(this.ship.x, this.ship.y - 30);
+    velocityText.alpha = 1;
+
+    // Add to world container so it moves with camera
+    this.worldContainer.addChild(velocityText);
+
+    // Fade out and remove after 2 seconds
+    void animate(
+      velocityText,
+      { alpha: 0 },
+      {
+        duration: 2,
+        onComplete: () => {
+          this.worldContainer.removeChild(velocityText);
+          velocityText.destroy();
+        },
+      },
+    );
   }
 
   private updateHUD(): void {

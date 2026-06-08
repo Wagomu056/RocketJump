@@ -18,26 +18,42 @@ export class Ship extends Container {
   public fuelState: FuelState = "charging";
   public prevBottom = 0;
 
+  // Health system
+  public currentHealth = 100;
+  public maxHealth = 100;
+
   private cooldownTimer = 0;
   private _lastJetAngle = Math.PI / 2;
   private _isThrusting = false;
   private gaugeGfx: Graphics;
+  private healthBarGfx: Graphics;
 
   // Vertical fuel gauge dimensions (in ship-local coords)
-  private static readonly GAUGE_X = SHIP_HALF_W + 5;
+  private static readonly GAUGE_X = -SHIP_HALF_W - 15; // Moved to left side
   private static readonly GAUGE_BASE_H = 48; // height at initialMaxFuel
   private static readonly GAUGE_MAX_H = 120; // cap so it doesn't grow forever
   private static readonly GAUGE_W = 6;
   private static readonly GAUGE_BOTTOM_Y = 16; // fixed bottom anchor
 
+  // Vertical health bar dimensions (in ship-local coords)
+  private static readonly HEALTH_BAR_X = SHIP_HALF_W + 10; // right side
+  private static readonly HEALTH_BAR_BASE_H = 48; // height at maxHealth
+  private static readonly HEALTH_BAR_W = 6;
+  private static readonly HEALTH_BAR_BOTTOM_Y = 16; // fixed bottom anchor
+
   constructor() {
     super();
     this.fuel = GAME_PARAMS.initialMaxFuel;
     this.maxFuel = GAME_PARAMS.initialMaxFuel;
+    this.currentHealth = GAME_PARAMS.health.maxHealth;
+    this.maxHealth = GAME_PARAMS.health.maxHealth;
     this.draw();
     this.gaugeGfx = new Graphics();
     this.addChild(this.gaugeGfx);
+    this.healthBarGfx = new Graphics();
+    this.addChild(this.healthBarGfx);
     this.updateFuelGauge();
+    this.updateHealthBar();
   }
 
   private draw(): void {
@@ -242,16 +258,52 @@ export class Ship extends Container {
     g.roundRect(x, topY, w, h, 2).stroke({ color: 0x8888aa, width: 1 });
   }
 
+  /** Redraw the vertical health bar. Bottom is fixed; height reflects current health. */
+  public updateHealthBar(): void {
+    const ratio =
+      this.maxHealth > 0 ? Math.min(this.currentHealth / this.maxHealth, 1) : 0;
+    const x = Ship.HEALTH_BAR_X;
+    const w = Ship.HEALTH_BAR_W;
+    const bottomY = Ship.HEALTH_BAR_BOTTOM_Y;
+
+    // Height is fixed (doesn't scale with maxHealth)
+    const h = Ship.HEALTH_BAR_BASE_H;
+    const topY = bottomY - h;
+
+    // Determine color based on health percentage
+    let fillColor = 0x22c55e; // Green (100%-51%)
+    if (ratio <= 0.25) {
+      fillColor = 0xef4444; // Red (25%-1%)
+    } else if (ratio <= 0.5) {
+      fillColor = 0xeab308; // Yellow (50%-26%)
+    }
+
+    const g = this.healthBarGfx;
+    g.clear();
+    // Track background
+    g.roundRect(x, topY, w, h, 2).fill({ color: 0x1e293b, alpha: 0.8 });
+    // Fill from bottom up
+    if (ratio > 0) {
+      const fillH = h * ratio;
+      g.roundRect(x, bottomY - fillH, w, fillH, 2).fill(fillColor);
+    }
+    // Border
+    g.roundRect(x, topY, w, h, 2).stroke({ color: 0x64748b, width: 1 });
+  }
+
   public resetState(): void {
     this.vx = 0;
     this.vy = 0;
     this.fuel = GAME_PARAMS.initialMaxFuel;
     this.maxFuel = GAME_PARAMS.initialMaxFuel;
+    this.currentHealth = GAME_PARAMS.health.maxHealth;
+    this.maxHealth = GAME_PARAMS.health.maxHealth;
     this.fuelState = "charging";
     this.cooldownTimer = 0;
     this._isThrusting = false;
     this._lastJetAngle = Math.PI / 2;
     this.prevBottom = 0;
     this.updateFuelGauge();
+    this.updateHealthBar();
   }
 }

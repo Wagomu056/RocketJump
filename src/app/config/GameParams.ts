@@ -80,5 +80,5 @@ export const GAME_PARAMS = {
   jetAngleMaxDeg: 170, // maximum angle — 180 = straight down (clamped when touch is lower side)
 
   // Debug features
-  debugShowLandingVelocity: true, // Display landing velocity at ship position for tuning
+  debugShowLandingVelocity: false, // Display landing velocity at ship position for tuning
 } as const;

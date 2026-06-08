@@ -762,3 +762,42 @@ Awaiting user approval.
 **Context**: CONSTRUCTION - Unit 4 ship visibility fixed
 
 ---
+
+## Unit 4: Life System — COMPLETE ✅
+**Completion Date**: 2026-06-09T00:00:00Z
+**Status**: All features implemented and tested
+**Deliverables**:
+  - ✅ Health system with configurable max health (100 HP)
+  - ✅ Two-tier damage on landing (small: 300 px/s → 25 HP, large: 500 px/s → 50 HP)
+  - ✅ Visual feedback: red flashing (white/small, red/large with alpha fading)
+  - ✅ Health bar UI on right side with gradient colors (green → yellow → red)
+  - ✅ Fuel meter repositioned to left side (mirroring health bar on right)
+  - ✅ Smoke particle effects (25% health: light, 10% health: heavy)
+  - ✅ Game over: 3-second explosion with dual-physics particles (yellow straight, black parabolic)
+  - ✅ Ship hidden during explosion for clean effect
+  - ✅ Debug landing velocity display (tunable via parameter)
+  - ✅ All parameters in GAME_PARAMS for easy tuning
+**Key Features**:
+  - Damage detection with proper velocity capture
+  - Flashing with correct timer units (seconds, not frames)
+  - Gravity physics on explosion particles for dramatic effect
+  - Two-tier visual feedback system
+  - Smoke emission based on health thresholds
+  - Game over reuses existing flow
+**Files Created**:
+  - src/app/game/JetParticleSystem.ts methods (spawnSmoke, spawnExplosion)
+**Files Modified**:
+  - src/app/config/GameParams.ts (health, flashing, smoke, debug parameters)
+  - src/app/screens/GameScreen.ts (health management, damage, flashing, smoke, game over)
+  - src/app/game/Ship.ts (health bar rendering, fuel meter repositioning)
+**Build Status**: ✅ PASSING (1104 modules, all clean)
+**Testing**: ✅ COMPLETE (manual gameplay testing verified all mechanics)
+
+---
+
+## Unit 4: PHASE COMPLETE
+**Overall Status**: ✅ CONSTRUCTION PHASE - Unit 4 COMPLETE
+**Ready for**: Build and Test phase, then Operations
+**Next Steps**: Run full game build and comprehensive testing
+
+---
